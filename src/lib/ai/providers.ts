@@ -73,14 +73,14 @@ export const AI_PROVIDERS: Record<AIProvider, AIProviderConfig> = {
     available: false,
   },
   yandex: {
-    name: 'YandexGPT 5.1 Pro',
+    name: 'YandexGPT 5 Pro',
     provider: 'yandex',
     model: 'yandexgpt/latest',
     costTier: 'standard',
     inputCostPer1M: 0.80,
     outputCostPer1M: 0.80,
     contextWindow: 32_000,
-    strengths: ['russian-compliance', 'translation'],
+    strengths: ['russian-compliance', 'translation', 'general-chat'],
     available: false,
   },
 };

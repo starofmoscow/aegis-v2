@@ -186,8 +186,7 @@ export async function* streamFromProvider(
       yield* streamDeepSeek(messages, model);
       break;
     case 'yandex':
-      // YandexGPT doesn't support streaming well — use non-streaming
-      yield await callYandex(messages, model);
+      yield* streamYandex(messages, model);
       break;
     default:
       throw new Error(`Unknown provider: ${provider}`);
@@ -319,24 +318,30 @@ async function* streamDeepSeek(messages: AIMessage[], model: string): AsyncGener
   }
 }
 
-async function callYandex(messages: AIMessage[], _model: string): Promise<string> {
+async function* streamYandex(messages: AIMessage[], _model: string): AsyncGenerator<string> {
   const apiKey = process.env.YANDEX_API_KEY;
   const folderId = process.env.YANDEX_FOLDER_ID;
   if (!apiKey || !folderId) throw new Error('YandexGPT API key or folder ID not configured');
 
+  // Determine auth header: IAM token (starts with 't1.') or API key
+  const authHeader = apiKey.startsWith('t1.')
+    ? `Bearer ${apiKey}`
+    : `Api-Key ${apiKey}`;
+
+  // Use streaming endpoint
   const response = await fetch('https://llm.api.cloud.yandex.net/foundationModels/v1/completion', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Api-Key ${apiKey}`,
+      Authorization: authHeader,
       'x-folder-id': folderId,
     },
     body: JSON.stringify({
       modelUri: `gpt://${folderId}/yandexgpt/latest`,
       completionOptions: {
-        stream: false,
+        stream: true,
         temperature: 0.3,
-        maxTokens: 4096,
+        maxTokens: 8192,
       },
       messages: [
         { role: 'system', text: SYSTEM_PROMPT },
@@ -346,11 +351,57 @@ async function callYandex(messages: AIMessage[], _model: string): Promise<string
   });
 
   if (!response.ok) {
-    throw new Error(`YandexGPT error: ${response.status} ${response.statusText}`);
+    const errBody = await response.text();
+    throw new Error(`YandexGPT error ${response.status}: ${errBody}`);
   }
 
-  const data = await response.json();
-  return data.result?.alternatives?.[0]?.message?.text || 'No response from YandexGPT';
+  // YandexGPT streaming returns newline-delimited JSON objects
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('No response body from YandexGPT');
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let previousText = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      try {
+        const data = JSON.parse(trimmed);
+        const text = data.result?.alternatives?.[0]?.message?.text;
+        if (text && text.length > previousText.length) {
+          // YandexGPT sends cumulative text, so emit only the delta
+          const delta = text.slice(previousText.length);
+          previousText = text;
+          yield delta;
+        }
+      } catch {
+        // Skip non-JSON lines
+      }
+    }
+  }
+
+  // Process remaining buffer
+  if (buffer.trim()) {
+    try {
+      const data = JSON.parse(buffer.trim());
+      const text = data.result?.alternatives?.[0]?.message?.text;
+      if (text && text.length > previousText.length) {
+        yield text.slice(previousText.length);
+      }
+    } catch {
+      // ignore
+    }
+  }
 }
 
 // ── Main Orchestration Function ──────────────────────────
