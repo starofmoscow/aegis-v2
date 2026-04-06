@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+/* ============================================================
+   EE AEGIS V2.0 — Bauhaus White Design System
+   Geometric clarity · Functional beauty · Engineering precision
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* Backgrounds */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F8F8F8;
+    --bg-tertiary: #F0F0F0;
+
+    /* Text Hierarchy */
+    --text-primary: #1B2A4A;
+    --text-secondary: #555E70;
+    --text-tertiary: #8C95A6;
+    --text-muted: #B0B8C8;
+
+    /* Brand Colors — EE */
+    --ee-crimson: #A91D2C;
+    --ee-crimson-light: #FDF2F3;
+    --ee-crimson-dark: #8B1623;
+    --ee-navy: #1B2A4A;
+    --ee-navy-light: #F0F2F6;
+
+    /* Functional Colors */
+    --success: #2D8A4E;
+    --success-light: #F0FAF4;
+    --warning: #C4880C;
+    --warning-light: #FFF9EE;
+    --error: #A91D2C;
+    --error-light: #FDF2F3;
+    --info: #2E75B6;
+    --info-light: #F0F6FC;
+
+    /* Borders */
+    --border: #E0E0E0;
+    --border-light: #EBEBEB;
+    --border-focus: #A91D2C;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(27, 42, 74, 0.04);
+    --shadow-md: 0 2px 8px rgba(27, 42, 74, 0.06);
+    --shadow-lg: 0 4px 16px rgba(27, 42, 74, 0.08);
+    --shadow-xl: 0 8px 32px rgba(27, 42, 74, 0.10);
+
+    /* Spacing Grid (8px) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+
+    /* Radii */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+
+    /* Typography */
+    --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'Geist Mono', 'SF Mono', 'Fira Code', monospace;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* Geist Font CDN */
+  @font-face {
+    font-family: 'Geist';
+    src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/Geist-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Geist';
+    src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/Geist-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Geist';
+    src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/Geist-SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Geist';
+    src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/Geist-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Geist Mono';
+    src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-mono/GeistMono-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+}
+
+@layer components {
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  *:focus-visible {
+    outline: 2px solid var(--ee-crimson);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--ee-crimson-light);
+    color: var(--ee-crimson);
+  }
+
+  .ee-gradient-text {
+    background: linear-gradient(135deg, var(--ee-crimson), var(--ee-navy));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
