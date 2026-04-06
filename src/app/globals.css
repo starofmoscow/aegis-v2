@@ -357,6 +357,34 @@
     100% { background-position: -200% 0; }
   }
 
+  /* ── Progress Bar ───────────────────────────────────── */
+  .aegis-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 9999;
+    background: transparent;
+    overflow: hidden;
+  }
+  .aegis-progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--ee-crimson), var(--accent), var(--ee-crimson), transparent);
+    animation: progress-slide 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    border-radius: 2px;
+  }
+
+  @keyframes progress-slide {
+    0% { left: -40%; }
+    100% { left: 100%; }
+  }
+
   /* ── Pulse Animation for AI ────────────────────────── */
   .aegis-pulse {
     animation: aegis-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;

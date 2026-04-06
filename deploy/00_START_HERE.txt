@@ -1,0 +1,186 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                     AEGIS V2.0 — START HERE                                 ║
+║                  Yandex Cloud Deployment Package                            ║
+║                                                                              ║
+║                         🚀 READY TO DEPLOY 🚀                               ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Welcome! Your complete AEGIS V2.0 deployment package has been created.
+
+Everything you need is in this directory (/sessions/.../aegis-v2/deploy/)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🟢 QUICK START (30 MINUTES TO PRODUCTION)
+
+  1. Read QUICKSTART.md (5 min)
+     └─ Understand what you're deploying
+
+  2. Run deployment (10 min)
+     └─ ./deploy.sh deploy
+
+  3. Configure API keys (5 min)
+     └─ ./deploy.sh ssh
+     └─ nano /opt/aegis/.env
+
+  4. Restart app (2 min)
+     └─ docker compose restart
+
+  5. Test (2 min)
+     └─ ./deploy.sh health
+     └─ make logs
+
+  Result: Live at https://158.160.172.77
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION HIERARCHY
+
+  Choose your path:
+
+  ┌─ FIRST TIME DEPLOYING?
+  │  └─ Read: QUICKSTART.md (6 KB, 5 min read)
+  │     Then run: ./deploy.sh deploy
+  │
+  ├─ WANT TO UNDERSTAND SYSTEM?
+  │  └─ Read: ARCHITECTURE.md (22 KB, 20 min read)
+  │     Plus: docker-compose.yml, nginx.conf
+  │
+  ├─ NEED QUICK REFERENCE?
+  │  └─ Read: REFERENCE_CARD.txt (30 KB, printable)
+  │     Or: Makefile (30+ commands)
+  │
+  └─ NEED COMPLETE GUIDE?
+     └─ Read: README.md (15 KB, comprehensive)
+        Then: Check INDEX.md for file reference
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 MOST USEFUL COMMANDS
+
+  Deployment:
+    ./deploy.sh deploy          ← RUN THIS FIRST
+    ./deploy.sh ssh             ← SSH to VM
+    make help                   ← Show all Makefile commands
+
+  Operations:
+    make logs                   ← View logs
+    make status                 ← Check health
+    make restart                ← Restart services
+
+  Troubleshooting:
+    make health                 ← Full health check
+    make stats                  ← Resource usage
+    make logs-v2ray             ← V2Ray logs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 WHAT'S INCLUDED (13 FILES, 204 KB)
+
+  DEPLOYMENT SCRIPTS:
+    setup-vm.sh               ← VM initialization
+    deploy.sh                 ← Automated deployment
+
+  CONFIGURATION:
+    docker-compose.yml        ← Service definitions
+    nginx.conf                ← Web server config
+    .env.example              ← Configuration template
+
+  PROXY SOLUTION:
+    cloudflare-worker-proxy.js ← Free API relay (optional)
+
+  DOCUMENTATION:
+    README.md                 ← Full guide (15 KB)
+    QUICKSTART.md             ← Quick start (6 KB)
+    ARCHITECTURE.md           ← Technical details (22 KB)
+    INDEX.md                  ← File reference (14 KB)
+    REFERENCE_CARD.txt        ← Cheat sheet (30 KB)
+    DEPLOYMENT_SUMMARY.txt    ← Project summary
+
+  UTILITIES:
+    Makefile                  ← Command shortcuts (30+ commands)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ WHAT YOU GET
+
+  ✓ V2Ray SOCKS5 proxy (auto-installed for API routing)
+  ✓ Docker Compose with 3 services (app, Redis, Nginx)
+  ✓ HTTPS/SSL termination (TLS 1.2+)
+  ✓ Reverse proxy with caching
+  ✓ Multi-provider AI orchestration (Claude, OpenAI, Google, xAI, DeepSeek, Groq)
+  ✓ Streaming API support
+  ✓ Health checks & monitoring
+  ✓ Production-ready security
+  ✓ Automated deployment
+  ✓ Comprehensive documentation
+
+  All in 30 minutes! ⚡
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❗ IMPORTANT BEFORE STARTING
+
+  1. SSH KEY
+     $ chmod 600 /sessions/wonderful-blissful-babbage/aegis-yc-key
+     
+  2. DOCKER
+     Docker must be installed locally (for building images)
+     
+  3. API KEYS
+     You'll need at least one API key:
+       • Anthropic Claude: https://console.anthropic.com/
+       • OpenAI: https://platform.openai.com/api-keys
+       • Google Gemini: https://aistudio.google.com/app
+       • xAI Grok: https://console.x.ai/
+       • DeepSeek: https://platform.deepseek.com/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 READY? START HERE:
+
+  Step 1: Read QUICKSTART.md
+
+  Step 2: Run deployment
+    $ ./deploy.sh deploy
+
+  Step 3: Add API keys
+    $ ./deploy.sh ssh
+    $ nano /opt/aegis/.env
+
+  Step 4: Start using AEGIS V2.0!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📞 QUICK HELP
+
+  Problem with deployment?
+    → Check: README.md → Troubleshooting section
+    → Or: REFERENCE_CARD.txt → Emergency Procedures
+
+  Need to understand architecture?
+    → Read: ARCHITECTURE.md
+
+  What commands are available?
+    → Run: make help
+    → Or: cat REFERENCE_CARD.txt
+
+  Where are important files?
+    → See: INDEX.md → File Descriptions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VERSION INFO
+
+  Created: 2026-04-06
+  AEGIS: V2.0
+  Target: Yandex Cloud (158.160.172.77)
+  Status: PRODUCTION READY
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Good luck! 🚀
+
+Next: Read QUICKSTART.md

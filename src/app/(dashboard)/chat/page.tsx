@@ -6,10 +6,22 @@ import { useUIStore } from '@/stores/ui';
 import {
   Send, Square, RotateCcw, Bot, User, ChevronDown, Sparkles,
   Cpu, Zap, Globe, Brain, Check, Copy,
+  Crosshair, BookOpen, Calculator, DollarSign, Wrench, ArrowRight,
 } from 'lucide-react';
 import type { AIProvider } from '@/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+
+/* ── Focus Modes (Perplexity-inspired) ───────────────── */
+type FocusMode = 'all' | 'engineering' | 'finance' | 'academic' | 'web';
+
+const focusModes: { value: FocusMode; label: string; icon: React.ElementType; color: string; desc: string }[] = [
+  { value: 'all', label: 'All', icon: Globe, color: 'var(--accent)', desc: 'Search everything' },
+  { value: 'engineering', label: 'Engineering', icon: Wrench, color: 'var(--info)', desc: 'ASME, API, TEMA standards' },
+  { value: 'finance', label: 'Finance', icon: DollarSign, color: 'var(--success)', desc: 'CAPEX, OPEX, feasibility' },
+  { value: 'academic', label: 'Academic', icon: BookOpen, color: '#7C3AED', desc: 'Journals & publications' },
+  { value: 'web', label: 'Web', icon: Crosshair, color: 'var(--ee-crimson)', desc: 'Live web search' },
+];
 
 /* ── Provider metadata ───────────────────────────────── */
 const providers: { value: AIProvider | 'auto'; label: string; sub: string; icon: React.ElementType; color: string }[] = [
@@ -45,6 +57,38 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
+/* ── Follow-up suggestion generator ──────────────────── */
+function getFollowUpSuggestions(lastResponse: string): string[] {
+  const suggestions: string[] = [];
+  const lower = lastResponse.toLowerCase();
+
+  // Engineering follow-ups
+  if (lower.includes('pressure') || lower.includes('vessel') || lower.includes('asme')) {
+    suggestions.push('What are the material selection criteria for this design?');
+    suggestions.push('Calculate the required wall thickness per ASME VIII');
+    suggestions.push('What are the inspection requirements?');
+  } else if (lower.includes('heat exchanger') || lower.includes('tema')) {
+    suggestions.push('What is the fouling factor for crude oil service?');
+    suggestions.push('Compare shell & tube vs plate heat exchanger for this duty');
+    suggestions.push('Calculate the required heat transfer area');
+  } else if (lower.includes('capex') || lower.includes('cost') || lower.includes('budget') || lower.includes('investment')) {
+    suggestions.push('Break down the CAPEX into major equipment categories');
+    suggestions.push('What is the expected OPEX per year?');
+    suggestions.push('Calculate the IRR and payback period');
+  } else if (lower.includes('pipe') || lower.includes('flow') || lower.includes('diameter')) {
+    suggestions.push('What pipe schedule is recommended?');
+    suggestions.push('Calculate the pressure drop for this configuration');
+    suggestions.push('What insulation is needed for this service?');
+  } else {
+    // Generic engineering follow-ups
+    suggestions.push('Explain the underlying assumptions in more detail');
+    suggestions.push('What are the key risks and mitigation strategies?');
+    suggestions.push('Generate a summary report for this analysis');
+  }
+
+  return suggestions.slice(0, 3);
+}
+
 /* ── Main Chat Page ──────────────────────────────────── */
 export default function ChatPage() {
   const { messages, isLoading, sendMessage, stopGeneration, clearMessages } = useChat();
@@ -52,6 +96,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<AIProvider | 'auto'>('auto');
   const [showProviderSelect, setShowProviderSelect] = useState(false);
+  const [focusMode, setFocusMode] = useState<FocusMode>('all');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const selectRef = useRef<HTMLDivElement>(null);
@@ -205,6 +250,35 @@ export default function ChatPage() {
               </div>
             );
           })}
+          {/* Follow-up Suggestions (Perplexity-style) */}
+          {messages.length > 0 && !isLoading && messages[messages.length - 1]?.role === 'assistant' && (
+            <div className="mt-4 mb-2 aegis-fade-in">
+              <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                Follow up
+              </p>
+              <div className="flex flex-col gap-1.5">
+                {getFollowUpSuggestions(messages[messages.length - 1]?.content || '').map((suggestion, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { setInput(suggestion); inputRef.current?.focus(); }}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-[12px] group"
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid var(--border-light)',
+                      color: 'var(--text-secondary)',
+                      transition: 'all var(--transition-fast)',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-secondary)'; e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--border-light)'; }}
+                  >
+                    <ArrowRight className="w-3 h-3 shrink-0" style={{ color: 'var(--ee-crimson)', opacity: 0.6 }} />
+                    <span className="truncate">{suggestion}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -270,6 +344,31 @@ export default function ChatPage() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Focus Mode Pills */}
+              <div className="flex items-center gap-0.5 shrink-0 border-r pr-2 mr-1" style={{ borderColor: 'var(--border-light)' }}>
+                {focusModes.map(mode => {
+                  const active = focusMode === mode.value;
+                  return (
+                    <button
+                      key={mode.value}
+                      type="button"
+                      onClick={() => setFocusMode(mode.value)}
+                      className="p-1.5 rounded-md relative group"
+                      style={{
+                        color: active ? mode.color : 'var(--text-muted)',
+                        background: active ? `${mode.color}12` : 'transparent',
+                        transition: 'all var(--transition-fast)',
+                      }}
+                      onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = 'var(--bg-tertiary)'; e.currentTarget.style.color = 'var(--text-secondary)'; } }}
+                      onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; } }}
+                      title={`${mode.label}: ${mode.desc}`}
+                    >
+                      <mode.icon className="w-3.5 h-3.5" />
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Textarea */}

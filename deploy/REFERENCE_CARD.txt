@@ -1,0 +1,347 @@
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│  EE AEGIS V2.0 — QUICK REFERENCE CARD                                       │
+│  Yandex Cloud Deployment (158.160.172.77)                                   │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ DEPLOYMENT (5 STEPS, 30 MINUTES) ──────────────────────────────────────────┐
+│                                                                              │
+│  1. chmod 600 ~/.ssh/aegis-yc-key                                          │
+│  2. cd /sessions/wonderful-blissful-babbage/aegis-v2/deploy                 │
+│  3. ./deploy.sh deploy                          (10 min, fully automated)   │
+│  4. ./deploy.sh ssh → nano /opt/aegis/.env      (add API keys)             │
+│  5. docker compose restart aegis                 (restart with new keys)     │
+│                                                                              │
+│  Done! App running at: https://158.160.172.77                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ MAKEFILE COMMANDS (USE THESE!) ────────────────────────────────────────────┐
+│                                                                              │
+│  make deploy          Full deployment                                       │
+│  make setup           VM setup only                                         │
+│  make build           Docker build only                                     │
+│  make ssh             SSH to VM                                             │
+│  make logs            View logs (Ctrl+C to exit)                            │
+│  make status          Check service health                                  │
+│  make restart         Restart all services                                  │
+│  make stop            Stop all services                                     │
+│  make health          Run health checks                                     │
+│  make stats           Resource usage (CPU, RAM, disk)                       │
+│  make help            Show all commands                                     │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ CRITICAL PATHS (ON VM: /opt/aegis/) ───────────────────────────────────────┐
+│                                                                              │
+│  .env                    API keys and configuration ← EDIT THIS!            │
+│  docker-compose.yml      Service definitions                                │
+│  nginx.conf              Web server config                                  │
+│  volumes/redis-data/     Redis persistent database                          │
+│  volumes/nginx-logs/     Web server logs                                    │
+│  volumes/app-logs/       Application logs                                   │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ API KEY SOURCES ───────────────────────────────────────────────────────────┐
+│                                                                              │
+│  Anthropic   https://console.anthropic.com/        sk-ant-...              │
+│  OpenAI      https://platform.openai.com/api-keys  sk-proj-...             │
+│  Google      https://aistudio.google.com/app       AIzaSy...               │
+│  xAI (Grok)  https://console.x.ai/                 xai-...                 │
+│  DeepSeek    https://platform.deepseek.com/        sk-...                  │
+│  Groq        https://console.groq.com/             gsk_...                 │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ TROUBLESHOOTING ───────────────────────────────────────────────────────────┐
+│                                                                              │
+│  Problem: App not responding                                                │
+│  → make logs                                                                │
+│  → make restart                                                             │
+│                                                                              │
+│  Problem: API calls failing                                                 │
+│  → make ssh → cat /opt/aegis/.env → verify API_KEY lines exist             │
+│  → docker exec aegis-app curl -x socks5://host.docker.internal:10808 ...   │
+│                                                                              │
+│  Problem: V2Ray not working                                                 │
+│  → make ssh → nc -zv localhost 10808                                        │
+│  → systemctl status v2ray                                                   │
+│  → systemctl restart v2ray                                                  │
+│                                                                              │
+│  Problem: Out of memory                                                     │
+│  → make stats                                                               │
+│  → Edit docker-compose.yml → NODE_OPTIONS (reduce 2048 to 1024)            │
+│  → make restart                                                             │
+│                                                                              │
+│  Problem: Disk full                                                         │
+│  → docker image prune                                                       │
+│  → docker system prune                                                      │
+│  → du -sh /opt/aegis/*                                                      │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ FILE SIZES (IN DEPLOY DIRECTORY) ──────────────────────────────────────────┐
+│                                                                              │
+│   9 KB  setup-vm.sh                 (VM initialization script)              │
+│  14 KB  deploy.sh                   (Deployment automation)                 │
+│   6 KB  docker-compose.yml          (Service definitions)                   │
+│  14 KB  nginx.conf                  (Web server config)                     │
+│  16 KB  cloudflare-worker-proxy.js  (Free API relay)                        │
+│   5 KB  .env.example                (Config template)                       │
+│  15 KB  README.md                   (Full documentation)                    │
+│   6 KB  QUICKSTART.md               (Quick start guide)                     │
+│  22 KB  ARCHITECTURE.md             (Technical details)                     │
+│  14 KB  INDEX.md                    (File reference)                        │
+│   7 KB  Makefile                    (Command shortcuts)                     │
+│  ─────                                                                      │
+│ 172 KB  TOTAL                                                               │
+│                                                                              │
+│ All files created 2026-04-06, version 1.0                                  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ NETWORK PORTS ─────────────────────────────────────────────────────────────┐
+│                                                                              │
+│  22    SSH               Internal only (restrict in production)             │
+│  80    HTTP              Redirects to HTTPS                                 │
+│  443   HTTPS/SSL         Main web interface                                 │
+│  3000  App               Internal (via Docker, not exposed)                 │
+│  6379  Redis             Internal (via Docker, not exposed)                 │
+│ 10808  V2Ray SOCKS5      Internal (localhost only)                          │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ ENVIRONMENT VARIABLES (TOP 10) ────────────────────────────────────────────┐
+│                                                                              │
+│  NODE_ENV=production                                                       │
+│  PORT=3000                                                                  │
+│  ANTHROPIC_API_KEY=sk-ant-...       ← REQUIRED (or other AI key)           │
+│  OPENAI_API_KEY=sk-proj-...         ← REQUIRED (or other AI key)           │
+│  HTTP_PROXY=socks5://host.docker.internal:10808                            │
+│  HTTPS_PROXY=socks5://host.docker.internal:10808                           │
+│  ALL_PROXY=socks5://host.docker.internal:10808                             │
+│  NODE_OPTIONS=--max-old-space-size=2048                                     │
+│  NEXT_PUBLIC_APP_URL=https://your-domain.com                               │
+│  NODE_TLS_REJECT_UNAUTHORIZED=1                                             │
+│                                                                              │
+│  See .env.example for complete list and documentation.                     │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ LOGGING & MONITORING ──────────────────────────────────────────────────────┐
+│                                                                              │
+│  Real-time logs:                                                            │
+│    make logs                         All services                            │
+│    make logs-app                     App only                               │
+│    make logs-nginx                   Web server                             │
+│    make logs-v2ray                   V2Ray proxy                            │
+│                                                                              │
+│  Status checks:                                                             │
+│    make status                       Service health                         │
+│    make stats                        Resource usage                         │
+│    make health                       Full health check                      │
+│                                                                              │
+│  Log files (on VM):                                                         │
+│    /opt/aegis/volumes/app-logs/                                            │
+│    /opt/aegis/volumes/nginx-logs/                                          │
+│    /var/log/v2ray/                                                         │
+│    journalctl -u v2ray -f            V2Ray service logs                     │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ SSL/TLS SETUP ─────────────────────────────────────────────────────────────┐
+│                                                                              │
+│  Development (self-signed):                                                │
+│    Works automatically after deployment                                     │
+│    Browser warning is normal (accept it)                                   │
+│                                                                              │
+│  Production (Let's Encrypt):                                               │
+│    make ssh                                                                 │
+│    sudo certbot certonly --standalone -d your-domain.com                   │
+│    nano /opt/aegis/nginx.conf                                              │
+│    # Update paths to your domain in nginx.conf                             │
+│    docker exec aegis-nginx nginx -s reload                                 │
+│                                                                              │
+│  Check certificate:                                                         │
+│    make ssl-status                   Show expiration date                   │
+│    make ssh → sudo certbot renew     Manual renewal                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ PROXY ROUTING DECISION TREE ───────────────────────────────────────────────┐
+│                                                                              │
+│  Use V2Ray SOCKS5 (default):                                               │
+│    ✓ Better performance (local)                                            │
+│    ✓ Full control                                                          │
+│    ✓ Unlimited requests                                                    │
+│    ✓ Simple setup (auto-configured)                                        │
+│                                                                              │
+│  Use Cloudflare Worker (fallback):                                         │
+│    ✓ FREE tier (100k req/day)                                              │
+│    ✓ Geographic distribution                                               │
+│    ✓ Reliable as backup                                                    │
+│    ✓ Easy deployment                                                       │
+│                                                                              │
+│  Recommendation: V2Ray primary + Cloudflare fallback                       │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ PERFORMANCE TUNING ────────────────────────────────────────────────────────┐
+│                                                                              │
+│  If CPU high:                                                               │
+│    • Check with: make stats                                                │
+│    • Scale app horizontally (load balancer needed)                         │
+│    • Or increase timeout in nginx.conf                                     │
+│                                                                              │
+│  If memory high:                                                            │
+│    • Check with: make stats                                                │
+│    • Reduce NODE_OPTIONS in docker-compose.yml (from 2048 to 1024)        │
+│    • Check Redis usage: docker exec aegis-redis redis-cli INFO memory     │
+│    • Clear Redis: docker exec aegis-redis redis-cli FLUSHALL              │
+│                                                                              │
+│  If disk full:                                                              │
+│    • Check usage: make disk-usage                                          │
+│    • Clean Docker: docker image prune && docker system prune               │
+│    • Check log sizes: du -sh /opt/aegis/volumes/*/                        │
+│                                                                              │
+│  If response slow:                                                          │
+│    • Check: nginx cache hits (nginx.conf caching section)                  │
+│    • Check: Redis latency (redis-cli --latency)                            │
+│    • Check: Upstream API latency (V2Ray logs)                              │
+│    • Use: curl -w "@curl-format.txt" https://...                          │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ BACKUP & RESTORE ──────────────────────────────────────────────────────────┐
+│                                                                              │
+│  Backup Redis database:                                                     │
+│    make db-backup                    Triggers Redis BGSAVE                  │
+│    Then copy: /opt/aegis/volumes/redis-data/dump.rdb → safe location      │
+│                                                                              │
+│  Restore Redis database:                                                    │
+│    make ssh                                                                 │
+│    cp /backup/dump.rdb /opt/aegis/volumes/redis-data/                     │
+│    docker compose restart redis                                             │
+│                                                                              │
+│  Backup .env file:                                                          │
+│    make ssh                                                                 │
+│    cp /opt/aegis/.env /secure/backup/                                     │
+│                                                                              │
+│  Full system backup (on your local machine):                               │
+│    mkdir -p /backup/aegis-$(date +%Y%m%d)                                  │
+│    scp -r aegis@158.160.172.77:/opt/aegis/volumes/ /backup/aegis_*/       │
+│    scp aegis@158.160.172.77:/opt/aegis/.env /backup/aegis_*/              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ DOCUMENTATION HIERARCHY ───────────────────────────────────────────────────┐
+│                                                                              │
+│  New to deployment?                                                         │
+│    → Start with QUICKSTART.md (5 min read)                                 │
+│    → Then run: ./deploy.sh deploy                                          │
+│                                                                              │
+│  Understanding the system?                                                  │
+│    → Read ARCHITECTURE.md (20 min, detailed)                               │
+│    → Review docker-compose.yml                                             │
+│    → Check nginx.conf                                                      │
+│                                                                              │
+│  Reference during ops?                                                      │
+│    → Use this REFERENCE_CARD.txt (quick lookup)                            │
+│    → Use Makefile commands (make help)                                     │
+│                                                                              │
+│  Troubleshooting?                                                           │
+│    → See README.md troubleshooting section                                  │
+│    → Use REFERENCE_CARD.txt (this file)                                    │
+│    → Check deployment logs: ./deploy.sh logs                               │
+│                                                                              │
+│  Complete reference?                                                        │
+│    → README.md (full documentation)                                        │
+│    → INDEX.md (file reference)                                             │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ CHEAT SHEET (COPY-PASTE READY) ────────────────────────────────────────────┐
+│                                                                              │
+│  SSH into VM:                                                               │
+│  $ ssh -i /sessions/wonderful-blissful-babbage/aegis-yc-key aegis@158.160.172.77
+│                                                                              │
+│  Or use Makefile:                                                           │
+│  $ make ssh                                                                 │
+│                                                                              │
+│  View live logs (Ctrl+C to exit):                                           │
+│  $ make logs                                                                │
+│  $ make logs-app                                                            │
+│  $ make logs-nginx                                                          │
+│  $ make logs-v2ray                                                          │
+│                                                                              │
+│  Update API keys:                                                           │
+│  $ make ssh                                                                 │
+│  $ nano /opt/aegis/.env                                                    │
+│  $ docker compose restart                                                   │
+│                                                                              │
+│  Check resource usage:                                                      │
+│  $ make stats                                                               │
+│  $ docker compose exec redis redis-cli INFO memory                         │
+│                                                                              │
+│  Test V2Ray SOCKS5:                                                         │
+│  $ make test-proxy                                                          │
+│  $ make test-api                                                            │
+│                                                                              │
+│  Full health check:                                                         │
+│  $ make health                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─ EMERGENCY PROCEDURES ──────────────────────────────────────────────────────┐
+│                                                                              │
+│  App crashed:                                                               │
+│  $ make logs | tail -50                    Check what happened              │
+│  $ make restart                            Force restart                    │
+│                                                                              │
+│  Disk full:                                                                 │
+│  $ make ssh                                                                 │
+│  $ docker image prune && docker system prune   Clean Docker               │
+│  $ df -h                                   Check space                     │
+│                                                                              │
+│  Memory issue:                                                              │
+│  $ make stats                              Check usage                      │
+│  # Edit docker-compose.yml (reduce max-old-space-size)                    │
+│  $ make restart                                                             │
+│                                                                              │
+│  Need rollback:                                                             │
+│  $ make ssh                                                                 │
+│  $ cd /opt/aegis                                                           │
+│  $ docker compose restart                 Restart all containers           │
+│  $ # Or restore from backup                                                │
+│                                                                              │
+│  Complete reset:                                                            │
+│  $ ./deploy.sh deploy                      Full redeployment               │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+Version: 1.0 (2026-04-06)
+Print this card or save as PDF for quick reference!
+
+For full details, see:
+  • README.md (complete documentation)
+  • QUICKSTART.md (30-minute setup)
+  • ARCHITECTURE.md (technical details)

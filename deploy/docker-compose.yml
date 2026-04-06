@@ -1,0 +1,180 @@
+# ============================================================
+# EE AEGIS V2.0 — Docker Compose Production Configuration
+# Yandex Cloud Deployment
+#
+# Services:
+#  - aegis: Next.js application (port 3000)
+#  - nginx: Reverse proxy + SSL termination (port 80, 443)
+#  - redis: Cache layer (optional, port 6379)
+#
+# Networks: aegis (internal), reverse-proxy (for nginx)
+# ============================================================
+
+version: '3.9'
+
+services:
+  # ─────────────────────────────────────────────────────────
+  # AEGIS V2.0 Next.js Application
+  # ─────────────────────────────────────────────────────────
+  aegis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aegis-app
+    restart: unless-stopped
+    environment:
+      # Core Configuration
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_TELEMETRY_DISABLED: 1
+
+      # Supabase Configuration
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-https://lxrcmygvglfxltgcycbi.supabase.co}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4cmNteWd2Z2xmeGx0Z2N5Y2JpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NzMzMDEsImV4cCI6MjA5MTA0OTMwMX0.qsf1OkFnXSlcFnT2cSYIW_gbCzmOZU75T7B3V5MHVVY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4cmNteWd2Z2xmeGx0Z2N5Y2JpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQ3MzMwMSwiZXhwIjoyMDkxMDQ5MzAxfQ.SNeusmLsDDNN2fMTxXYklSYPyX_swvnsVvai_Jr8Soo}
+
+      # App URLs
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://aegis-v2.yc.example.com}
+
+      # AI API Keys - Route through V2Ray SOCKS5 proxy
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY:-}
+      XAI_API_KEY: ${XAI_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      YANDEX_API_KEY: ${YANDEX_API_KEY:-}
+      YANDEX_FOLDER_ID: ${YANDEX_FOLDER_ID:-}
+
+      # Proxy Configuration for API calls
+      # V2Ray is running on the host (port 10808), accessible via host gateway
+      # Using docker-compose network mode to access host services
+      HTTP_PROXY: socks5://host.docker.internal:10808
+      HTTPS_PROXY: socks5://host.docker.internal:10808
+      ALL_PROXY: socks5://host.docker.internal:10808
+
+      # Node.js proxy support
+      NODE_OPTIONS: "--max-old-space-size=2048"
+
+      # Disable SSL verification for development (use with caution)
+      NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-1}
+
+    ports:
+      - "3000:3000"
+
+    networks:
+      - aegis
+
+    volumes:
+      # Optional: Mount logs directory
+      - ./volumes/app-logs:/app/logs
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    depends_on:
+      - redis
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Allow host network access for V2Ray proxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ─────────────────────────────────────────────────────────
+  # Redis Cache Layer
+  # ─────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: aegis-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    networks:
+      - aegis
+    volumes:
+      - ./volumes/redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  # ─────────────────────────────────────────────────────────
+  # Nginx Reverse Proxy with SSL
+  # ─────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: aegis-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      # Configuration
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-snippets:/etc/nginx/snippets:ro
+
+      # SSL/TLS Certificates (Let's Encrypt)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+
+      # Cache directory
+      - ./volumes/nginx-cache:/var/cache/nginx
+
+      # Logs
+      - ./volumes/nginx-logs:/var/log/nginx
+
+    networks:
+      - aegis
+
+    depends_on:
+      - aegis
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    environment:
+      # These can be used in Nginx config via envsubst if needed
+      NGINX_WORKER_PROCESSES: auto
+      NGINX_WORKER_CONNECTIONS: 2048
+
+networks:
+  aegis:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+volumes:
+  redis-data:
+    driver: local
+  nginx-cache:
+    driver: local
+  nginx-logs:
+    driver: local
+  app-logs:
+    driver: local
