@@ -11,6 +11,7 @@ import {
 import type { AIProvider } from '@/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import TaskTracker from '@/components/ui/TaskTracker';
 
 /* ── Focus Modes (Perplexity-inspired) ───────────────── */
 type FocusMode = 'all' | 'engineering' | 'finance' | 'academic' | 'web';
@@ -191,6 +192,13 @@ export default function ChatPage() {
                 ))}
                 <span className="text-[11px] ml-1" style={{ color: 'var(--text-muted)' }}>7 AI providers connected</span>
               </div>
+            </div>
+          )}
+
+          {/* Task Progress Tracker (Claude-style) */}
+          {(isLoading || messages.length > 0) && (
+            <div className="mb-4">
+              <TaskTracker />
             </div>
           )}
 
